@@ -1,0 +1,28 @@
+{
+  "name": "pro-oc-extension-cors-proxy",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Lukáš Drahník <ldrahnik@gmail.com>",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-xml-bodyparser": "^0.3.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ldrahnik/pro-oc-extension-cors-proxy.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ldrahnik/pro-oc-extension-cors-proxy/issues"
+  },
+  "homepage": "https://github.com/ldrahnik/pro-oc-extension-cors-proxy#readme",
+  "engines": {
+    "node": "14.x"
+  }
+}
