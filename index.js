@@ -1,13 +1,13 @@
 var express = require('express');
 var request = require('request');
-var xmlparser = require('express-xml-bodyparser');
+var bodyParser = require('body-parser')
 var fs = require('fs');
 var app = express();
 
-app.use(xmlparser());
+app.use(bodyParser.text());
 
-var pfxFilePath = fs.readFileSync('assets/cert.pfx');
-var pfxPassphrase = fs.readFileSync('assets/cert.pass.txt');
+var pfxFilePath = fs.readFileSync('cert/cert.pfx');
+var pfxPassphrase = fs.readFileSync('cert/cert.pass.txt', 'utf8'); 
 
 var targetURL = 'https://prod.b2b.vzp.cz';
 
@@ -39,7 +39,12 @@ app.all('*', function (req, res, next) {
     } else if (req.method === "POST") {
 
         return new Promise(resolve => {
-            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: req.rawBody, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
+            var bodyDecoded = "";
+            if(req.body) {
+                const asciiBody = Buffer.from(req.body, 'base64').toString('ascii');
+                bodyDecoded = decodeURIComponent(asciiBody);
+            }
+            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: bodyDecoded, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
                 function (error, response, body) {
                     if (!error) {
                         console.log('POST error:', error);
@@ -53,7 +58,8 @@ app.all('*', function (req, res, next) {
             );
         }).then(body => {
             console.log('POST: response sent');
-            res.send(body);
+            var bodyBase64 = Buffer.from(encodeURIComponent(body), 'ascii').toString('base64');
+            res.send(bodyBase64);
         });
     } else {
         console.log(req.method + ': is not POST, GET or OPTION request');
