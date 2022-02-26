@@ -3,13 +3,27 @@ var request = require('request');
 var bodyParser = require('body-parser')
 var fs = require('fs');
 var app = express();
+var CryptoJS = require("crypto-js");
 
-app.use(bodyParser.text());
+app.use(express.text());
 
 var pfxFilePath = fs.readFileSync('cert/cert.pfx');
 var pfxPassphrase = fs.readFileSync('cert/cert.pass.txt', 'utf8'); 
+var encryptionPass = fs.readFileSync('encryption/key.txt', 'utf8'); 
 
 var targetURL = 'https://prod.b2b.vzp.cz';
+
+function encryptBody(body, key) {
+    let encJson = CryptoJS.AES.encrypt(JSON.stringify( { body }), key).toString();
+    let encData = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(encJson));
+    return encData;
+}
+
+function decryptBody(body, key) {
+    let decData = CryptoJS.enc.Base64.parse(body).toString(CryptoJS.enc.Utf8);
+    let bytes = CryptoJS.AES.decrypt(decData, key).toString(CryptoJS.enc.Utf8);
+    return JSON.parse(bytes).body;
+}
 
 app.all('*', function (req, res, next) {
 
@@ -39,12 +53,9 @@ app.all('*', function (req, res, next) {
     } else if (req.method === "POST") {
 
         return new Promise(resolve => {
-            var bodyDecoded = "";
-            if(req.body) {
-                const asciiBody = Buffer.from(req.body, 'base64').toString('ascii');
-                bodyDecoded = decodeURIComponent(asciiBody);
-            }
-            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: bodyDecoded, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
+
+            const bodyDecrypted = decryptBody(req.body, encryptionPass);
+            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: bodyDecrypted, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
                 function (error, response, body) {
                     if (!error) {
                         console.log('POST error:', error);
@@ -58,8 +69,8 @@ app.all('*', function (req, res, next) {
             );
         }).then(body => {
             console.log('POST: response sent');
-            var bodyBase64 = Buffer.from(encodeURIComponent(body), 'ascii').toString('base64');
-            res.send(bodyBase64);
+            var bodyEncrypted = encryptBody(body, encryptionPass);
+            res.send(bodyEncrypted);
         });
     } else {
         console.log(req.method + ': is not POST, GET or OPTION request');
