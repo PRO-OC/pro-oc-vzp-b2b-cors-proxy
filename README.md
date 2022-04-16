@@ -1,4 +1,4 @@
-# PRO OC VZP B2B CORS Proxy
+# PRO OC VZP B2B Proxy
 
 ## Použití
 
