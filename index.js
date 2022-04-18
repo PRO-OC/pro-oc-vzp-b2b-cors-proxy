@@ -1,15 +1,14 @@
 var express = require('express');
 var request = require('request');
-var bodyParser = require('body-parser')
-var fs = require('fs');
 var app = express();
+var fs = require("fs");
 var CryptoJS = require("crypto-js");
 
 app.use(express.text());
 
-var pfxFilePath = fs.readFileSync('cert/cert.pfx');
-var pfxPassphrase = fs.readFileSync('cert/cert.pass.txt', 'utf8'); 
-var encryptionPass = fs.readFileSync('encryption/key.txt', 'utf8'); 
+var cert = fs.readFileSync("cert.pem");
+var certPass = process.env.CERT_PASS;
+var encryptKey = process.env.ENCRYPT_KEY;
 
 var targetURL = 'https://prod.b2b.vzp.cz';
 
@@ -39,7 +38,7 @@ app.all('*', function (req, res, next) {
     } else if (req.method === "GET") {
 
         return new Promise(resolve => {
-            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
+            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, agentOptions: { cert: cert, key: cert, passphrase: certPass, securityOptions: 'SSL_OP_NO_SSLv3' } },
                 function (error, response, body) {
                     if (!error) {
                         resolve(body);
@@ -54,8 +53,8 @@ app.all('*', function (req, res, next) {
 
         return new Promise(resolve => {
 
-            const bodyDecrypted = decryptBody(req.body, encryptionPass);
-            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: bodyDecrypted, agentOptions: { pfx: pfxFilePath, passphrase: pfxPassphrase, securityOptions: 'SSL_OP_NO_SSLv3' } },
+            const bodyDecrypted = decryptBody(req.body, encryptKey);
+            request({ url: targetURL + req.url, method: req.method, headers: {'Content-Type': 'text/xml'}, body: bodyDecrypted, agentOptions: { cert: cert, key: cert, passphrase: certPass, securityOptions: 'SSL_OP_NO_SSLv3' } },
                 function (error, response, body) {
                     if (!error) {
                         console.log('POST error:', error);
@@ -69,7 +68,7 @@ app.all('*', function (req, res, next) {
             );
         }).then(body => {
             console.log('POST: response sent');
-            var bodyEncrypted = encryptBody(body, encryptionPass);
+            var bodyEncrypted = encryptBody(body, encryptKey);
             res.send(bodyEncrypted);
         });
     } else {

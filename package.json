@@ -1,28 +1,28 @@
 {
-  "name": "pro-oc-vzp-b2b-cors-proxy",
+  "name": "pro-oc-vzp-b2b-proxy",
   "version": "0.0.1",
   "description": "",
   "author": "Lukáš Drahník <ldrahnik@gmail.com>",
   "main": "index.js",
   "dependencies": {
     "crypto-js": "^4.1.1",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-xml-bodyparser": "^0.3.0",
     "request": "^2.88.2"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pro-oc/pro-oc-vzp-b2b-cors-proxy.git"
+    "url": "git+https://github.com/pro-oc/pro-oc-vzp-b2b-proxy.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pro-oc/pro-oc-vzp-b2b-cors-proxy/issues"
+    "url": "https://github.com/pro-oc/pro-oc-vzp-b2b-proxy/issues"
   },
-  "homepage": "https://github.com/pro-oc/pro-oc-vzp-b2b-cors-proxy#readme",
+  "homepage": "https://github.com/pro-oc/pro-oc-vzp-b2b-proxy#readme",
   "engines": {
     "node": "14.x"
   }
